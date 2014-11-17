@@ -1,10 +1,10 @@
 #pragma once
 #include "testingconsole.h"
 
-class SEConsole :
+class RunMe_Console :
 	public TestingConsole
 {
 public:
-	SEConsole(void);
+	RunMe_Console(void);
 };
 

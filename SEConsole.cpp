@@ -5,8 +5,6 @@
 #include "Wallet.h"
 #include "LaunchData.h"
 
-// HAX
-
 /* Launch all coins at the player */
 void Pull(vector<int> args)
 {
@@ -138,126 +136,126 @@ void j(vector<int> args)
 SEConsole::SEConsole(void)
 {
 	// All recognised commands
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("pull", 
 		"Pulling all coins toward the player.", 
 		"Launches all coins to the player.", 
 		Pull)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("bounce", 
 		"Bouncing.", 
 		"Bounces all throwables up into the air.", 
 		BounceUp)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("set_bounce", 
 		"Bouncing set.", 
 		"Pass an int boolean to set the bounciness of all throwables.", 
 		SetBouncy)
 	);
 	
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("toggle_pull", 
 		"Pull toggled. When enabled, press 1 to pull all coins toward the player.", 
 		"Toggles the pull ability. Activate by pressing hotkey: 1", 
 		TogglePull)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("mag", 
 		"Magnetism Toggled", 
 		"Toggles player magnetism, making it easier to collect coins.",
 		ToggleMagnetism)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("smash", 
 		"Smash Activated.", 
 		"Simulates the 'Smash' Ability.",
 		Smash)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("smash_wave", 
 		"Wave Smash activated.", 
 		"Simulates the 'Smash Wave' Ability.",
 		SmashWave)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("mute", 
 		"Muted all sounds.", 
 		"Mutes coin collection sound effects.",
 		Mute)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("unmute", 
 		"Restored all sounds.", 
 		"Restores all coin collection sound effects.",
 		Unmute)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("add_coins", 
 		"Coins added.", 
 		"Adds a specified number of coins to the player's wallet.",
 		AddCoins)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("max", 
 		"Coins added. So many coins.", 
 		"Adds 999999999 coins to the player's wallet.",
 		AddCoins_Large)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("double_coins", 
 		"Coins have been doubled", 
 		"Doubles the player's coins in their wallet.",
 		DoubleCoins)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("dispense", 
 		"Dispensing...", 
 		"Dispenses a specified number of coins directly into the game. May be unstable.",
 		Dispense)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("home", 
 		"Homing in on player.", 
 		"Sets all collectables' homing property to true.",
 		HomeIn)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("force_tier", 
 		"Setting launch tier to manual value. WARNING: Collecting a coin will reset it.", 
 		"Overrides the launch tier, which determines the possible launch patterns and styles unlocked. Also affects the type of coins launched.",
 		ForceTier)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("print_launch_info", 
 		"", 
 		"Prints the kind of launch info available at the currently set tier.",
 		PrintLaunchInfo)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("calc", 
 		"Calculating: ", 
 		"Performs a calculation. May change depending on the developer's choice of debug calculation.",
 		Calc)
 	);
 
-	commands.push_back( 
+	m_commands.push_back( 
 		Command("j", 
 		"Yes sir.", 
 		"Jordan's preset of debug calls. Changes upon his mood. Originally [mag], [toggle_pull] and [mute].",

@@ -24,54 +24,59 @@ void TestingConsole::Toggle(void)
 
 void TestingConsole::KeyIn(SDL_keysym& keysym)
 {
-	if (keysym.sym == SDLK_BACKSPACE) // Backspace pops the last element of the string
+	SDLKey key = keysym.sym;
+	if (key == SDLK_BACKSPACE) // Backspace 
 	{ 
+		// Pop the last element of the string in the line
 		if (m_line.size() > 0) {
             m_line.pop_back();
             printf("\b \b"); // Backspace
 		}
 	}
-	else if (keysym.sym == SDLK_RETURN) // Enter enters the code into the console
+	else if (key == SDLK_RETURN) // Enter/Return
 	{ 
+		// Enter the code into the console
 		printf("\n");
 		Enter();
 		NewLine();
 	}
-	else if (keysym.sym == SDLK_UP) // Traverse UP along the command memory
+	else if (key == SDLK_UP) // Traverse UP along the command memory
 	{ 
 		string commandStr = "";
 
-		if (!commandMemory.empty())
+		if (!m_commandMemory.empty())
 		{
-			if (memoryIterator != commandMemory.begin()) {
-				memoryIterator--;
-				commandStr = *memoryIterator;
+			if (m_memoryIterator != m_commandMemory.begin()) {
+				m_memoryIterator--;
+				commandStr = *m_memoryIterator;
 			}
 		}
 
 		if (commandStr != "")
 			OverrideLine(commandStr);
 	}
-	else if (keysym.sym == SDLK_DOWN) // Traverse UP along the command memory
+	else if (key == SDLK_DOWN) // Traverse DOWN along the command memory
 	{ 
 		string commandStr = "";
 
-		if (!commandMemory.empty())
+		if (!m_commandMemory.empty())
 		{
-			if (memoryIterator != commandMemory.end())
+			if (m_memoryIterator != m_commandMemory.end())
 			{
-				memoryIterator++;
-				if (memoryIterator != commandMemory.end())
-					commandStr = *memoryIterator;
+				m_memoryIterator++;
+				if (m_memoryIterator != m_commandMemory.end())
+					commandStr = *m_memoryIterator;
 			}
 		}
 		
 		OverrideLine(commandStr);
 	}
 	else 
-	{ // Otherwise, just input the character
-		if (ValidationInput(keysym))
-			printf("%c", (char)(keysym.unicode));
+	{ 
+		// Otherwise, just input the character
+		char keyChar = keysym.unicode;
+		if (ValidationInput(keyChar))
+			printf("%c", keyChar);
 	}
 }
 
@@ -88,14 +93,12 @@ void TestingConsole::OverrideLine(string _line)
 	printf("%s", m_line.c_str());
 }
 
-
-/* Enter the current m_line into the console, invoking any corresponding functions. */
 void TestingConsole::Enter(void)
 { 
 	// Add this line to the list of entered command strings
-	commandMemory.remove(m_line);
-	commandMemory.push_back(m_line);
-	memoryIterator = commandMemory.end();
+	m_commandMemory.remove(m_line);
+	m_commandMemory.push_back(m_line);
+	m_memoryIterator = m_commandMemory.end();
 
 	// Separate the activation command from its arguments, if any
 	pair<string, string> codeArgumentsPair = SplitCommandCode(m_line);
@@ -107,7 +110,8 @@ void TestingConsole::Enter(void)
 		return;
 	}
 
-	for (Command possibleCommand : commands)
+	// Search through all of the commands for a match
+	for (Command possibleCommand : m_commands)
 	{
 		if (activationCode == possibleCommand.code)
 		{
@@ -140,7 +144,7 @@ void TestingConsole::CommandHelp(void)
 {
 	printf("Available commands:\n\n");
 
-	for (Command c : commands)
+	for (Command c : m_commands)
 	{
 		printf("[%s] = %s\n", 
 				c.code.c_str(), 
@@ -207,18 +211,19 @@ vector<int> TestingConsole::ExtractArguments(string argumentsString)
 	return r_args;
 }
 
-bool TestingConsole::ValidationInput(SDL_keysym keysym)
+bool TestingConsole::ValidationInput(char keyChar)
 {
-	bool isMisc = ((keysym.unicode == (Uint16)' ') || (keysym.unicode == (Uint16)'_'));
-	bool isNumber = ((keysym.unicode >= (Uint16)'0') && (keysym.unicode <= (Uint16)'9'));
-	bool isLowercase = ((keysym.unicode >= (Uint16)'a') && (keysym.unicode <= (Uint16)'z'));
-	bool isUppercase = ((keysym.unicode >= (Uint16)'A') && (keysym.unicode <= (Uint16)'Z'));
+	// All valid character types
+	bool isMisc = ((keyChar == ' ') || (keyChar == '_'));
+	bool isNumber = ((keyChar >= '0') && (keyChar <= '9'));
+	bool isLowercase = ((keyChar >= 'a') && (keyChar <= 'z'));
+	bool isUppercase = ((keyChar >= 'A') && (keyChar <= 'Z'));
 
-	// Add the character if it 
+	// Add the character if it is any of the above
     if (isMisc || isNumber || isLowercase || isUppercase)
     {
         //Append the character
-        m_line += (char)keysym.unicode;
+        m_line += (char)keyChar;
     }
 
 	return (isMisc || isNumber || isLowercase || isUppercase);
