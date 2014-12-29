@@ -1,9 +1,20 @@
-#include "SEConsole.h"
+#include "CGConsole.h"
 #include "Coin.h"
 #include "Player.h"
 #include "Game.h"
 #include "Wallet.h"
 #include "LaunchData.h"
+#include "ParticleSnow.h"
+#include "Camera.h"
+
+#define DIVIDES(a, b) (a%b == 0)
+
+/* Temporary calculation function for printing arbitrary calculations used in debugging. 
+Override the contents of this function for your own calculations when appropriate. */
+void Calc(vector<int> args)
+{
+	// Nothing
+}
 
 /* Launch all coins at the player */
 void Pull(vector<int> args)
@@ -12,17 +23,45 @@ void Pull(vector<int> args)
 
 	for (Throwable* t : g_throwables)
 	{
-		if (!t->moving) {
+		if (!t->IsAirborne()) {
 			t->LaunchTo(g_player->x, g_player->y, suppression);
 		}
 	}
 }
 
+/* Make a small explosion of simple particles */
+void ParticleExplosion(vector<int> args)
+{
+	int s_x, s_y; // Start coords
+	s_x = screen->w/2 - TILE_SIZE/2;
+	s_y = screen->h/2 - TILE_SIZE/2+2*TILE_SIZE;
+
+	int e_x, e_y; // End coords
+
+	list<Particle*> particles;
+	int num = args.front();
+	for (int i = 0; i < num; i++)
+	{
+		// Dirt flies somewhere around behind the player
+		e_x = s_x + (rand() % (6*TILE_SIZE)) - 3*TILE_SIZE;
+		e_y = s_y + (rand() % (4*TILE_SIZE)) - 2*TILE_SIZE;
+
+		ParticleSimple* part = new ParticleSimple(s_x, s_y, e_x, e_y);
+
+		particles.push_back(part);
+		g_game->addGameObject(part);
+	}
+
+	for (Particle* p : particles)
+		p->Launch(1);
+}
+
+
 /* Make all coins bounce in place */
 void BounceUp(vector<int> args)
 {
 	for (Throwable* t : g_throwables)
-		if (!t->moving)
+		if (!t->IsAirborne())
 			t->BounceUp();
 }
 
@@ -30,16 +69,8 @@ void BounceUp(vector<int> args)
 void SetBouncy(vector<int> args)
 {
 	for (Throwable* t : g_throwables)
-		if (!t->moving)
+		if (!t->IsAirborne())
 			t->SetBouncy(args.front());
-}
-
-/* Temporary calculation function for printing arbitrary calculations used in debugging. 
-Override the contents of this function for your own calculations when appropriate. */
-void Calc(vector<int> args)
-{
-	// Prints calculated activation levels
-	LaunchData::ComputeActivationLevels(true);
 }
 
 
@@ -57,7 +88,7 @@ void HomeIn(vector<int> args)
 	list<Throwable*> closeThrowables = Throwable::ThrowablesAroundPlayer(distance);
 	for (Throwable* t : closeThrowables)
 	{
-		if (!t->moving) {
+		if (!t->IsAirborne()) {
 			t->SetHoming(distance, speed);
 		}
 	}
@@ -74,7 +105,8 @@ void SmashWave(vector<int> args)
 
 /* Toggles coin magnetism */
 void ToggleMagnetism(vector<int> args)
-	{ g_player->SetMagnetic( !g_player->IsMagnetic() ); }
+	{ //g_player->SetMagnetic( !g_player->IsMagnetic() );
+    }
 
 
 
@@ -103,37 +135,49 @@ void AddCoins_Large(vector<int> args)
 void DoubleCoins(vector<int> args)
 	{ Wallet::IncCoinsBy(Wallet::GetCoins()); }
 
-
-
 /* Dispense Coins */
 void Dispense(vector<int> args)
-	{ g_machine->ForceDispense(args.front()); }
-
-/* Force Launch Tier */
-void ForceTier(vector<int> args)
-	{ LaunchData::ForceTier(args.front()); }
+	{ g_camera->GetRoomFocus()->GetMachine()->ForceDispense(args.front()); }
 
 /* Print Information about the Tier's Launch Info */
-void PrintLaunchInfo(vector<int> args)
-	{ LaunchData::PrintLaunchInfo(); }
+void Talk(vector<int> args)
+{ 
+	g_player->Say("Hey.");
+}
 
 
 /* Jordan's debug preset */
 void j(vector<int> args)
 {
-	TogglePull(args);
-	ToggleMagnetism(args);
+	//TogglePull(args);
+	//ToggleMagnetism(args);
 
-	// Toggle Mute
-	if (g_game->IsMuted()) 
-		Unmute(args);
-	else
-		Mute(args);
+	//// Toggle Mute
+	//if (g_game->IsMuted()) 
+	//	Unmute(args);
+	//else
+	//	Mute(args);
+
+	/*g_machine->ForceDispense(1000);
+	Mute(args);*/
+	
+	// Focus the camera over the fire room's sinkhole.
+	g_camera->DisableUpdate();
+	s_renderingOffset_x = -screen->w;
+	s_renderingOffset_y = screen->h+10*TILE_SIZE;
+}
+
+
+/* Set the rendering offset values */
+void SetRenderOffset(vector<int> args)
+{
+	s_renderingOffset_x = args.at(0);
+	s_renderingOffset_y = args.at(1);
 }
 
 
 
-SEConsole::SEConsole(void)
+CGConsole::CGConsole(void)
 {
 	// All recognised commands
 	m_commands.push_back( 
@@ -235,20 +279,6 @@ SEConsole::SEConsole(void)
 	);
 
 	m_commands.push_back( 
-		Command("force_tier", 
-		"Setting launch tier to manual value. WARNING: Collecting a coin will reset it.", 
-		"Overrides the launch tier, which determines the possible launch patterns and styles unlocked. Also affects the type of coins launched.",
-		ForceTier)
-	);
-
-	m_commands.push_back( 
-		Command("print_launch_info", 
-		"", 
-		"Prints the kind of launch info available at the currently set tier.",
-		PrintLaunchInfo)
-	);
-
-	m_commands.push_back( 
 		Command("calc", 
 		"Calculating: ", 
 		"Performs a calculation. May change depending on the developer's choice of debug calculation.",
@@ -256,9 +286,30 @@ SEConsole::SEConsole(void)
 	);
 
 	m_commands.push_back( 
+		Command("offset", 
+		"Setting the offset ", 
+		"Gives a manual value to the rendering offset values, x and y respectively.",
+		SetRenderOffset)
+	);
+
+	m_commands.push_back( 
 		Command("j", 
 		"Yes sir.", 
 		"Jordan's preset of debug calls. Changes upon his mood. Originally [mag], [toggle_pull] and [mute].",
 		j)
+	);
+
+	m_commands.push_back( 
+		Command("exp", 
+		"Exploding particles", 
+		"Adds a small, standard explosion of simple particles at (320,320).",
+		ParticleExplosion)
+	);
+
+	m_commands.push_back( 
+		Command("talk", 
+		"", 
+		"Tests speech bubbles by making the player talk",
+		Talk)
 	);
 }

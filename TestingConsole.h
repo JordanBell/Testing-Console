@@ -1,3 +1,11 @@
+//
+//  TestingConsole.h
+//  Testing-Console
+//
+//  Created by Jordan Bell on 15/10/2014.
+//  Copyright (c) 2014 Jordan Bell. All rights reserved.
+//
+
 #pragma once
 #include <string>
 #include <list>
@@ -50,16 +58,25 @@ protected:
 	list<Command> m_commands;
 
 private:
-	string m_prompt; // The "prompt" displayed in the console before the user input
-	list<string> m_commandMemory; // The list of previously enterred commands, cycled through using the UP and DOWN keys
-	list<string>::iterator m_memoryIterator; // The iterator through the list of command memories
-	string m_line; // The string currently enterred into the console
-	bool m_active; // Defines whether or not this console will accept input
+	// The "prompt" displayed in the console before the user input
+	string m_prompt; 
 
-	// Return a pair of strings. The first being the activation code, the second being the arguments
+	// The list of previously enterred commands, cycled through using the UP and DOWN keys
+	list<string> m_commandMemory; 
+
+	// The iterator through the list of command memories
+	list<string>::iterator m_memoryIterator; 
+
+	// The string currently enterred into the console
+	string m_line; 
+
+	// Defines whether or not this console will accept input
+	bool m_active; 
+
+	// Returns a pair of strings. The first being the argument's activation code, the second being its arguments
 	static pair<string, string> SplitCommandCode(string line); 
 
-	// Returns a vector of arguments from a string of suppose arguments
+	// Returns a vector of arguments from a string of arguments, separated by spaces
 	static vector<int> ExtractArguments(string argumentsString); 
 
 	// Open the console, enabling SDL unicode input and prompting the user

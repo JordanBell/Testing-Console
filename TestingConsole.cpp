@@ -1,3 +1,11 @@
+//
+//  TestingConsole.cpp
+//  Testing-Console
+//
+//  Created by Jordan Bell on 15/10/2014.
+//  Copyright (c) 2014 Jordan Bell. All rights reserved.
+//
+
 #include "TestingConsole.h"
 #include <cstdlib>
 #include <iostream>
